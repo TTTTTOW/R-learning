@@ -1,0 +1,267 @@
+---
+title: "Report"
+author: "Unknown"
+date: "2022-10-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Question 1
+## (a)
+According to the box plot, it can be seen that the average of the test time of seven year student is around 52.5. There are less students who can go over average than who cannot.
+According to the histogram, it can be seen that the distribution of the test time of year 7 students is look like a left skewed normal distribution. 
+```{r}
+load("AssignmentData (2).RData")
+boxplot(Q1.df$Year7,main="Boxplot of year 7 students")
+hist(Q1.df$Year7,main="Histogram of year 7 students",xlab="Test times")
+```
+
+
+## (b)
+The sample range of the test time of year seven students is 24.2. 
+The sample interquartile range is as below:
+Min.   1st Qu.  Median  Mean    3rd Qu.  Max. 
+35.40   48.10   52.40   51.59   55.40   59.60
+The sample coefficient of variation is 0.0952.
+```{r}
+max(Q1.df$Year7)-min(Q1.df$Year7) #sample range
+summary(Q1.df$Year7) #interquartile range
+cal_cv=function(x){
+  y=na.omit(x)
+  return(sd(y)/mean(y))
+}
+cal_cv(Q1.df$Year7) # coefficient of variation
+```
+
+
+## (c)
+According to the bar plot, the least frequently occurring category is "good".
+```{r}
+Q1.df$group1 = cut(Q1.df$Year7, breaks = c(0,43.75,45.15,48.95,54.25,100),labels = c("great","good","average","mediocre","poor"),right=FALSE, include.lowest=TRUE)
+counts = table(Q1.df$group1)
+barplot(counts, main="Test performance for the year 7 students",xlab="Test performance", ylab="Number of students")
+```
+
+
+## (d)
+According to the the statement, the hypothesis can be written as,
+H_0: p>=0.415, H_α: p<0.415.
+By calculating, we find that p-value = 0.067 > α = 0.05, so that we cannot refuse H_0.
+
+The population proportion of year 7 students within the school district that would complete the test in less than 50.55 minutes is not less than 41.5%.
+```{r}
+less = subset(Q1.df$Year7, Q1.df$Year7 <= 50.55)
+p = length(less)/length(Q1.df$Year7)
+z = (p-0.415)/sqrt(0.415*0.585/length(Q1.df$Year7))
+pnorm(z,lower.tail=TRUE)
+```
+
+
+## (e)
+According to the the statement, the hypothesis can be written as,
+H_0: p1-p2 >= 0, H_α: p1-p2 < 0
+By calculating, we find that p-value = 0.1809 > α = 0.025, so that we cannot refuse H_0.
+
+The population proportion of year 7 students within the school district that would take longer than 50.75 minutes to complete the test is not less than the population proportion of year 8 students within the school district that would complete the test in less than 49.55 minutes.
+```{r}
+x1 = subset(Q1.df$Year7, Q1.df$Year7 > 50.75)
+p1 = length(x1)/length(Q1.df$Year7)
+x2 = subset(Q1.df$Year8, Q1.df$Year8 < 49.55)
+p2 = length(x2)/length(Q1.df$Year8)
+pbar = (length(Q1.df$Year7)*p1+length(Q1.df$Year8)*p2)/(length(Q1.df$Year8)+length(Q1.df$Year7))
+z = (p1-p2)/sqrt(pbar*(1-pbar)*(1/250))
+pnorm(z,lower.tail=TRUE)
+```
+
+
+## (f)
+Using the enumeration method to enumerate the possible results, we get the following ten results. The distribution of the sample range is about -5 to 8.
+```{r}
+x=Q1.df$Year7[Q1.df$Year7[1:6]]
+x1=x[6]-x[1]
+x2=x[5]-x[1]
+x3=x[4]-x[1]
+x4=x[3]-x[1]
+x5=x[6]-x[2]
+x6=x[5]-x[2]
+x7=x[4]-x[2]
+x8=x[6]-x[3]
+x9=x[5]-x[3]
+x10=x[6]-x[4]
+y=c(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10)
+hist(y,main = "The sampling distribution of the sample range")
+boxplot(y,main = "The sampling distribution of the sample range")
+```
+
+
+## (g)
+If the sample range was greater than 5, the probability that it was less than 8 is 0.5.
+```{r}
+sub = y[y>5 & y<8]
+sub1 = y[y>5]
+length(sub)/length(sub1)
+```
+
+
+## (h)
+The variance of the sample range is 88.3982.
+```{r}
+var(y)
+```
+
+
+
+# Queation 2
+## (a)
+According to the the statement, the hypothesis can be written as,
+ H_0: sigema1=2; H_alpha: sigema1≠2
+By calculating, we find that p-value = 0.1510 > alpha = 0.01, so that we cannot refuse H0.
+
+The population variance of body weight is the same for people who play football and for people who play tennis cannot be rejected.
+```{r}
+football = subset(Q2.df, Q2.df$Sport == "Football")
+var1 = var(football$Weight)
+tennis = subset(Q2.df, Q2.df$Sport == "Tennis")
+var2 = var(tennis$Weight)
+n1 = length(football$Weight)
+n2 = length(tennis$Weight)
+p = pf(var1/var2, n2-1, n1-1, lower.tail = FALSE)
+1-p*2
+```
+
+
+## (b)
+According to the the statement, the hypothesis can be written as,
+H_0: Mu_tennis-Mu_football<=0.9; H_alpha: Mu_tennis-Mu_football>0.9
+By calculating, we find that p-value = 0.0000 > 0.01, so that refuse H0.
+
+The population mean body weight of people who play tennis is greater than the population mean body weight of people who play football by more than 0.9 kilograms.
+```{r}
+mean1 = mean(football$Weight)
+mean2 = mean(tennis$Weight)
+t = (mean1-mean2-0.9)/sqrt((((n1-1)*var1+(n2-1)*var2)/(n1+n2-2))*(1/n1+1/n2))
+pt(t,n1+n2-2)
+```
+
+
+## (c)
+According to the the statement, the hypothesis can be written as,
+H_0: Mu1=Mu2=... The population means at different levels of the factor are all equal;
+H_alpha: The population means at different levels of the factor are not all equal, at least two of the population means differ.
+By calculating, we find that F = 39.0732 > F_alpha = 3.9640, so that refuse H0.
+
+The population mean body weight is not the same across all recreational sports.
+```{r}
+volleyball = subset(Q2.df, Q2.df$Sport == "Volleyball")
+mean3 = mean(volleyball$Weight)
+var3 = var(volleyball$Weight)
+n3 = length(volleyball$Weight)
+SST = var(Q2.df$Weight)*(300-1)
+SSE = var1*(n1-1)+var2*(n2-1)+var3*(n3-1)
+SSTR = SST - SSE
+SSTR/2/(SSE/(300-3))
+qf(0.98,2,300-3)
+```
+
+
+## (d)
+We make some basic assumptions when doing the test performed in part (c):
+1. Each population has to be normally distributed, and the histogram shows that the samples are close to normal distribution;
+2. Each population has the same variance, as we can see in the bar plot, the variance of the samples is close;
+3. The observations in each sample are independent of each other;
+```{r}
+#1
+hist(football$Weight, main="Football")
+hist(tennis$Weight, main="Tennis")
+hist(volleyball$Weight, main="Volleyball")
+#2
+x = c(var1,var2,var3)
+barplot(x, main = "The variance for each distribution")
+```
+
+
+## (e)
+According to the the statement, the hypothesis can be written as,
+H0: Mu_body weight of right-handed people >= 86.5; H_alpha: Mu < 86.5
+By calculating, we find that t = -2.6245 > t_alpha = -2.6846, we cannot reject H0.
+
+The population mean body weight of right-handed people who play tennis is not less than 86.5 kilograms
+```{r}
+x = tennis$Weight[tennis$Hand=="Right"]
+t = (mean(x)-86.5)/(sd(x)/sqrt(length(x)))
+qt(0.005,length(x)-1)
+```
+
+
+## (f)
+A scatter plot of bench press amount against body weight:
+```{r}
+plot(Q2.df$Weight,Q2.df$BenchPress,main="Scatter plot of BenchPress against Weight",xlab="Weight",ylab="Bench Press")
+```
+According to the plot, we can find that there is positive linear relationship between bench press amount and body weight.
+
+
+## (g)
+According to the the statement, the hypothesis can be written as,
+H0: The correlation between bench press amount and body weight r <= 0; 
+H1: The correlation between bench press amount and body weight r > 0.
+By calculating, we find that t = 17.3664 > t_alpha = 2.9200, so that we can reject H0.
+
+The correlation between bench press amount and body weight is greater than zero.
+```{r}
+r = cor(Q2.df$Weight,Q2.df$BenchPress)
+t = r*sqrt(300-2)/sqrt(1-r^2)
+qt(0.95,length(Q2.df)-2)
+```
+
+
+## (h)
+The simple linear regression model with bench press amount as the dependent variable and body weight as the independent variable is BenchPress=-3.9286+0.8778*Weight
+```{r}
+model = lm(Q2.df$BenchPress~Q2.df$Weight)
+summary(model)
+```
+
+
+## (i)
+1. The random error term is a random variable whose expected value or average value is 0, as the bos plot below, the mean of random error term nearly to zero;
+2. For all observations of explanatory variables, the random error terms have the same variance, as the residual has constant variance;
+3. Random error terms are not correlated with each other;
+4. Explanatory variables are deterministic variables, not random variables, and are independent of each other with random error terms;
+5. There is no complete linear relationship between explanatory variables, that is, the sample observation matrix of explanatory variables is a full-rank matrix;
+6. Random error terms follow normal distribution, which has been violated. According to the histogrm, we can see that it is not normally distributed.
+```{r}
+hist(model$res,main="Histogram of residuals",xlab="Residuals")
+plot(Q2.df$Weight,model$res,main="Residual plot",xlab="Weight",ylab="Residuals")
+boxplot(model$res)
+```
+
+
+## (j)
+Considering only left-handed people, fit a simple linear regression model with bench press amount as the dependent variable and body weight as the independent variable, we can  estimated regression
+model as below, BenchPress=45.7655+0.5183*Weight.
+The prediction for the bench press amount for a left-handed person who weighs 80 kilograms is 87.2279.
+```{r}
+y = Q2.df$Weight[Q2.df$Hand=="Left"]
+x = Q2.df$BenchPress[Q2.df$Hand=="Left"]
+b1 = cov(x,y)/var(x)
+b0 = mean(y)-b1*mean(x)
+```
+
+
+## (k)
+According to the the statement, the hypothesis can be written as,
+H0:weight-bench<=13.5; H_alpha: weight-bench>13.5
+By calculating, we find that t = 1.1679 < t_alpha = 2.0739, so that we cannot reject H0.
+
+For right-handed people who weigh more than 87.5 kilograms, the population mean body weight is not greater than the population mean bench press amount by more than 13.5 kilograms.
+```{r}
+da = Q2.df$Weight[Q2.df$Hand=="Right"& Q2.df$Weight>87.5]-Q2.df$BenchPress[Q2.df$Hand=="Right"& Q2.df$Weight>87.5]
+t = (mean(da)-13.5)/(sd(da)/sqrt(length(da)))
+qt(0.975,length(da)-1)
+```
+
+
